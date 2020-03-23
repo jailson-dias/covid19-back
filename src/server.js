@@ -1,5 +1,7 @@
 import Express from "express";
 import cors from "cors";
+import * as settings from "./settings";
+import logger from "./utils/logger";
 
 const app = Express();
 
@@ -13,8 +15,6 @@ app.get("/teste", (req, res) => {
   res.send("Funcionando :)");
 });
 
-app.listen(
-  process.env.SERVICE_PORT || 3000,
-  process.env.SERVICE_HOST || "0.0.0.0",
-  () => console.log("Listening...")
+app.listen(settings.SERVICE_PORT, settings.SERVICE_HOST, () =>
+  logger.info(`Listening on port ${settings.SERVICE_PORT}...`)
 );
