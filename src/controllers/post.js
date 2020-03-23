@@ -21,8 +21,12 @@ export const create = ({
   return post.save();
 };
 
-export const list = () => {
-  return Post.find({ removed: { $ne: true } }).sort("-createdAt");
+export const list = ({ page = 1, qtd = 10 }) => {
+  return Post.find({ removed: { $ne: true } })
+    .sort("-createdAt")
+    .skip((page - 1) * qtd)
+    .limit(page * qtd)
+    .select("-__v");
 };
 
 export const update = (
@@ -39,7 +43,9 @@ export const update = (
   if (link) post.link = link;
 
   post.updatedAt = Date.now();
-  return Post.findByIdAndUpdate(id, post);
+  return Post.updateOne({ _id: id }, post).then(() =>
+    Post.findById(id).select("-__v")
+  );
 };
 
 export const remove = id => {
@@ -47,6 +53,6 @@ export const remove = id => {
     if (post.removed) {
       throw NotFound();
     }
-    return Post.findByIdAndUpdate(id, { removed: true });
+    return Post.updateOne({ _id: id }, { removed: true });
   });
 };
