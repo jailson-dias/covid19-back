@@ -1,13 +1,16 @@
 import winston from "winston";
-import { DEBUG_LEVEL } from "../settings";
+import * as settings from "../settings";
 
-winston.emitErrs = true;
+const { combine, timestamp, label, printf } = winston.format;
+const loggerFormat = printf(({ level, message, label, timestamp }) => {
+  return `${timestamp} [${label}] ${level.toLocaleUpperCase()}: ${message}`;
+});
 
 if (!global.logger) {
-  global.logger = new winston.Logger({
+  global.logger = new winston.createLogger({
     transports: [
       new winston.transports.Console({
-        level: DEBUG_LEVEL,
+        level: settings.DEBUG_LEVEL,
         handleExceptions: false,
         json: false,
         prettyPrint: true,
@@ -15,6 +18,11 @@ if (!global.logger) {
         timestamp: true
       })
     ],
+    format: combine(
+      label({ label: settings.SERVICE_NAME }),
+      timestamp(),
+      loggerFormat
+    ),
     exitOnError: false
   });
 }

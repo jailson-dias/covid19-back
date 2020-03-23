@@ -10,15 +10,15 @@ mongoose.connect(MONGO_URI, {
 });
 mongoose.Promise = global.Promise;
 
-const db = mongoose.connection;
+const database = mongoose.connection;
 
-db.on("error", err => {
+database.on("error", err => {
   logger.error(`Error connecting on database: ${err}`);
   process.exit(1);
 });
 
-db.once("open", () => {
+database.once("open", () => {
   logger.info("Mongo successfully connected");
 });
 
-export default db;
+export default database;

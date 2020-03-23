@@ -1,6 +1,7 @@
 export const MONGO_URI =
   process.env.MONGO_URI || "mongodb://localhost:27017/covid19";
 export const DEBUG_LEVEL = process.env.DEBUG_LEVEL || "debug";
+export const SERVICE_NAME = process.env.SERVICE_NAME || "Covid-19";
 
 export const MIN_AGE = process.env.MIN_AGE || 0;
 export const MAX_AGE = process.env.MAX_AGE || 150;
