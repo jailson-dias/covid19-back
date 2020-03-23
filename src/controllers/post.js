@@ -43,15 +43,20 @@ export const update = (
   if (link) post.link = link;
 
   post.updatedAt = Date.now();
-  return Post.updateOne({ _id: id }, post).then(() =>
-    Post.findById(id).select("-__v")
-  );
+  return Post.findById(id)
+    .then(post => {
+      if (post.removed) {
+        throw new NotFound("Post not found");
+      }
+      return Post.updateOne({ _id: id }, post);
+    })
+    .then(() => Post.findById(id).select(["-__v", "-removed"]));
 };
 
 export const remove = id => {
   return Post.findById(id).then(post => {
     if (post.removed) {
-      throw NotFound();
+      throw new NotFound("Post not found");
     }
     return Post.updateOne({ _id: id }, { removed: true });
   });

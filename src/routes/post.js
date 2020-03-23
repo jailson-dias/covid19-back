@@ -2,6 +2,7 @@ import Express from "express";
 import * as postController from "../controllers/post";
 import { responseGenerate } from "../utils/helpers";
 import logger from "../utils/logger";
+import NotFound from "../exceptions/notFound";
 
 const router = Express.Router();
 
@@ -70,16 +71,18 @@ const update = (req, res) => {
       res.status(200).json(responseGenerate({ data: post }));
     })
     .catch(err => {
-      console.log("chegou aqui 1");
       let errors = {};
       let status = 500;
 
       if (err && err.name == "ValidationError") {
-        console.log("entrou aqui");
         status = 400;
         errors = validationErrors(err.errors);
+      } else if (err instanceof NotFound) {
+        status = 404;
+        errors = {
+          message: "Post not found"
+        };
       } else {
-        console.log("entrou aqui else");
         errors = {
           message: "Unidentified error"
         };
@@ -90,9 +93,43 @@ const update = (req, res) => {
     });
 };
 
+const remove = (req, res) => {
+  postController
+    .remove(req.params.id)
+    .then(post => {
+      logger.info(`Post ${post.id} removed successfully`);
+      res.status(200).json(
+        responseGenerate({
+          message: {
+            message: "Successfully removed"
+          }
+        })
+      );
+    })
+    .catch(err => {
+      let errors = {};
+      let status = 500;
+
+      if (err instanceof NotFound) {
+        status = 404;
+        errors = {
+          message: "Post not found"
+        };
+      } else {
+        errors = {
+          message: "Unidentified error"
+        };
+
+        logger.error(`Unidentified error: ${err.stack}`);
+      }
+
+      res.status(status).json(responseGenerate({ message: errors }));
+    });
+};
+
 router.post("/post", create);
 router.get("/posts", list);
 router.put("/post/:id", update);
-// router.delete("/post/:id", document);
+router.delete("/post/:id", remove);
 
 export default router;
