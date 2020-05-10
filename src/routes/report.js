@@ -1,18 +1,17 @@
 import Express from "express";
-import * as postController from "../controllers/post";
-import { responseGenerate } from "../utils/helpers";
-import logger from "../utils/logger";
-import NotFound from "../exceptions/notFound";
+import reportController from "../controllers/report";
 import { validationErrors } from "../utils/helpers";
 
 const router = Express.Router();
 
 const create = (req, res) => {
-  postController
+  logger.info("Creating a report...");
+
+  reportController
     .create(req.body)
-    .then(post => {
-      logger.info(`Post ${post.id} created successfully`);
-      res.status(201).json(responseGenerate({ data: post }));
+    .then(report => {
+      logger.info(`Report ${report.id} created successfully`);
+      res.status(201).json(responseGenerate({ data: report }));
     })
     .catch(err => {
       let errors = {};
@@ -32,9 +31,11 @@ const create = (req, res) => {
     });
 };
 
-const list = (req, res) => {
-  postController
-    .list(req.query)
+const myReports = (req, res) => {
+  logger.info("Getting my reports...");
+
+  reportController
+    .myReports()
     .then(posts => {
       logger.info(
         `Listing page ${req.query.page || 1} with ${
@@ -42,6 +43,26 @@ const list = (req, res) => {
         } posts successfully`
       );
       res.status(200).json(responseGenerate({ data: posts }));
+    })
+    .catch(err => {
+      let errors = {
+        message: "Unidentified error"
+      };
+      let status = 500;
+
+      logger.error(`Unidentified error: ${err.stack}`);
+      res.status(status).json(responseGenerate({ message: errors }));
+    });
+};
+
+const reportsByPostalCode = (req, res) => {
+  logger.info("Getting my reports by postal code...");
+
+  reportController
+    .reportsByPostalCode(req.params.postalCode)
+    .then(reports => {
+      logger.info(`Retuning reports by postal code successfully`);
+      res.status(200).json(responseGenerate({ data: reports }));
     })
     .catch(err => {
       let errors = {
@@ -118,9 +139,12 @@ const remove = (req, res) => {
     });
 };
 
-router.post("/post", create);
-router.get("/posts", list);
-router.put("/post/:id", update);
-router.delete("/post/:id", remove);
+router.post("/", create);
+router.get("/my", myReports);
+router.get("/region/:postalCode", reportsByPostalCode);
+router.put("/:id", edit);
+router.delete("/:id", remove);
+
+const create = (req, res, next) => {};
 
 export default router;

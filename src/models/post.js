@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const post = new mongoose.Schema({
+  owner: {
+    type: String,
+    required: [true, "The owner is required"]
+  },
   title: {
     type: String,
     required: [true, "The title is required"]
